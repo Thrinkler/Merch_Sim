@@ -1,6 +1,6 @@
 package app;
 
-import app.players.Players;
+import app.players.Player;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -40,29 +40,26 @@ public class DataLogger {
 
             sb.append(String.format("%.4f", avgPrice));
         }
-        pricesWriter.println(sb.toString());
+        pricesWriter.println(sb);
     }
 
-    public void logDailySummary(int day, double totalMoney, Players[] players, Players richest, Players poorest) {
+    public void logDailySummary(int day, double totalMoney, ArrayList<Player> players) {
 
         double totalPatrimony = 0;
-        for (Players p : players) {
+        for (Player p : players) {
             totalPatrimony += p.getPatrimony();
         }
 
-        double avgMoney = totalMoney / players.length;
-        double avgPatrimony = totalPatrimony / players.length;
+        double avgMoney = totalMoney / players.size();
+        double avgPatrimony = totalPatrimony / players.size();
 
-        double richestPat = richest.getPatrimony();
-        double poorestPat = poorest.getPatrimony();
 
-        summaryWriter.println(String.format("%d,%.4f,%.4f,%.4f,%.4f,%.4f",
+
+        summaryWriter.println(String.format("%d,%.4f,%.4f,%.4f",
                 day,
                 totalMoney,
                 avgMoney,
-                avgPatrimony,
-                richestPat,
-                poorestPat
+                avgPatrimony
         ));
     }
 

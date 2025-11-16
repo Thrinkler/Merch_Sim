@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
 
-public abstract class Players{
+public class Player {
     ArrayList<Items> inventory;
     HashMap<String,Integer> materialList;
     final Random rand = new Random();
@@ -18,24 +18,41 @@ public abstract class Players{
 
     ArrayList<ItemTemplate> itemsThatCanGoToWishlist;
 
+    boolean isDead = false;
 
-    double money;
+    int day = 0;
+
+    Items tool;
+    ArrayList<ItemTemplate> workTools = new ArrayList<>();
+
+    int thirst = 0;
+    int hunger = 0;
+
+    int maxHunger;
+    int maxThirst;
+
+    boolean lookingForFood = false;
+
+   double money;
 
     private final int crafting_stat;
 
-    public Players(Merch merch){
+    public Player(Merch merch){
         money = rand.nextInt(1000);
         this.merch = merch;
 
         ItemList itemList = new ItemList();
 
         crafting_stat = rand.nextInt(10);
+
         this.inventory = new ArrayList<>();
-        
         this.materialList = new HashMap<>();
-        
+
         this.wishList = new ArrayList<>();
         this.itemsThatCanGoToWishlist = itemList.getGameItems();
+
+        maxHunger = rand.nextInt(10,20);
+
     }
 
     public void addItemToWishList(){
@@ -116,19 +133,117 @@ public abstract class Players{
     public void sellItem(Items item){
         if (item == null) return;
         double calculatedPrice = calculateInitialPrice(item);
-        //System.out.println("I want to sell a "+ item.getName() + " for " + calculatedPrice);
+        if(materialList.containsKey(item.getName()) && materialList.getOrDefault(item.getName(), 0) > 0){
+            materialList.put(item.getName(), materialList.getOrDefault(item.getName(), 0) - 1);
+        }
+        else {
+            this.inventory.removeIf(items -> items.getName().equals(item.getName()));
+        }
         merch.setNewOffer(new SellOffer(item,calculatedPrice, this));
     }
 
+    private Items searchForFood(){
+        for (Items item : inventory) {
+            if(itemList.isFood(item)){
+                return item;
+            }
+        }
+        for(String material: materialList.keySet()){
+            Material mat = new Material(material);
+            if(itemList.isFood(mat)){
+                return mat;
+            }
+        }
+        return null;
+    }
+
+    public void eat(){
+        Items food = searchForFood();
+        if(food == null) {
+            lookingForFood = true;
+            ArrayList<ItemTemplate> possibleFood;
+            possibleFood = (ArrayList<ItemTemplate>) itemList.getFoodItems().clone();
+
+            ItemTemplate foodWish;
+            while(!possibleFood.isEmpty()){
+                foodWish = possibleFood.remove(rand.nextInt(possibleFood.size()));
+                if(buyProcess(foodWish)) break;
+            }
+            lookingForFood = false;
+        }
+        food = searchForFood();
+        if(food == null) {return;}
+
+        hunger = 0;
+        maxHunger = rand.nextInt(5,10);
+        inventory.remove(food);
+
+        if(materialList.getOrDefault(food.getName(), 0) > 0){
+            materialList.put(food.getName(), materialList.getOrDefault(food.getName(), 0) - 1);
+        }
+    }
 
 
-    public abstract void dayRoutine();
+    public void kill(){
+        isDead = true;
+    }
+
+    public boolean isNotDead(){
+        return !isDead;
+
+    }
+
+    public void essentialDaily(){
+        day++;
+        hunger ++;
+        //thirst ++;
+        eat();
+        ArrayList<Items> newInv = new ArrayList<>();
+        for(Items item : inventory){
+            if(item.useItem()){
+                newInv.add(item);
+            }
+        }
+        inventory = newInv;
+        if(thirst > maxThirst ||  hunger >maxHunger){
+            kill();
+        }
+    }
+
+    public int dayRoutine(){
+        essentialDaily();
+        return 0;
+    }
+
+    void findNewTool(){
+        for(Items item: inventory){
+            for(ItemTemplate workTool : workTools){
+                if(workTool.getName().equals(item.getName())){
+                    tool = item;
+                    return;
+                }
+            }
+        }
+        for(ItemTemplate item: workTools){
+            lookingForFood = true;
+            buyProcess(item);
+            lookingForFood = false;
+        }
+    }
+
     public boolean buyProcess(ItemTemplate itemToBuy){
         OffersOfAnItem wishedOffer = merch.findOffersOfAnItem(itemToBuy);
         return buyProcess(wishedOffer);
     }
     boolean buyProcess(OffersOfAnItem wishedOffer){
-        SellOffer possibleOffer = (wishedOffer == null)? null : wishedOffer.getRandSmartOffer(money/rand.nextInt(1,10));
+        SellOffer possibleOffer;
+        if((hunger < maxHunger*0.8 || thirst < maxThirst*0.8)&& !lookingForFood){
+            possibleOffer = (wishedOffer == null)? null : wishedOffer.getRandSmartOffer(money/rand.nextInt(1,5));
+        }
+        else{
+            possibleOffer = (wishedOffer == null)? null : wishedOffer.getRandSmartOffer(money);
+        }
+
         if(possibleOffer != null){
             buyItem(wishedOffer, possibleOffer);
             return true;
@@ -141,8 +256,13 @@ public abstract class Players{
         if (rand.nextBoolean() || wishList.isEmpty()) {
             addItemToWishList();
         }
-        ItemTemplate itemToBuy = wishList.getFirst();
-        wishList.remove(itemToBuy);
+        ItemTemplate itemToBuy = wishList.removeFirst();
+
+        for(Items item: inventory){
+            if(item.getName().equals(itemToBuy.getName())){return ;}
+        }
+        if(materialList.getOrDefault(itemToBuy.getName(), 0) > 0){return;}
+
         if(!buyProcess(itemToBuy)) wishList.add(itemToBuy);
     }
 
@@ -154,7 +274,7 @@ public abstract class Players{
         double myFairValue = (productionCost * (1.0 + ((double) item.getQuality() / 10.0)));
         OffersOfAnItem marketOffers = merch.findOffersOfAnItem(item);
         if (marketOffers == null) {
-            return myFairValue* 1.2;
+            return myFairValue* 1.1;
         }
 
         double[] minmax = marketOffers.getMinMaxPriceOffer();
@@ -163,6 +283,7 @@ public abstract class Players{
         double lowest = Math.max(minmax[0] * 0.95,myFairValue*1.1);
 
         double highest = Math.min(minmax[1], marketOffers.maxPrice) * 1.05;
+        if(lowest == 0) lowest = 0.1;
         if (lowest >= highest) {
             highest = lowest * 1.1;
         }
@@ -175,17 +296,14 @@ public abstract class Players{
 
         if(item.getCraftNeeded() == null || item.getCraftNeeded().length == 0) { // Es un material
             OffersOfAnItem matOffer = merch.findOffersOfAnItem(item);
-            return matOffer != null ? matOffer.getAveragePrice() :  10;
+            double initialPrice = 1;
+            return matOffer != null ? matOffer.getAveragePrice() :  initialPrice;
         }
 
         for(String mat : item.getCraftHashNeeded().keySet()){
             productionCost+= item.getCraftHashNeeded().get(mat) * getProductionCost(itemList.getItem(mat));
         }
         return productionCost;
-    }
-
-    public ArrayList<Items> getInventory() {
-        return inventory;
     }
 
     public double getMoney() {
@@ -211,14 +329,6 @@ public abstract class Players{
         this.money += money;
     }
 
-    public HashMap<String, Integer> getMaterialList() {
-        return materialList;
-    }
-
-
-    public ArrayList<ItemTemplate> getWishList(){
-        return wishList;
-    }
 }
 
 

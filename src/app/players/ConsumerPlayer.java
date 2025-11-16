@@ -2,7 +2,7 @@ package app.players;
 
 import app.*;
 
-public class ConsumerPlayer extends Players {
+public class ConsumerPlayer extends Player {
     public ConsumerPlayer(Merch merch){
         super(merch);
         itemsThatCanGoToWishlist = itemList.getFinalItems();
@@ -10,8 +10,10 @@ public class ConsumerPlayer extends Players {
     }
 
     @Override
-    public void dayRoutine() {
+    public int dayRoutine() {
+        super.dayRoutine();
         buyProcess();
         if(rand.nextBoolean()) sellItem();
+        return 0;
     }
 }

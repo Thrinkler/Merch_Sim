@@ -3,149 +3,192 @@ package app;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class ItemList{
-    private final ArrayList<ItemTemplate> gameItems;
-    private final ArrayList<ItemTemplate> materialItems;
-    private final ArrayList<ItemTemplate> finalItems;
+public class ItemList {
+
+    // Listas Requeridas (para no romper tu código)
+    private final ArrayList<ItemTemplate> gameItems;      // TODOS los ítems
+    private final ArrayList<ItemTemplate> materialItems;  // Solo materiales (consumidos en crafteo)
+    private final ArrayList<ItemTemplate> finalItems;     // Ítems que no son materiales (productos)
+
+    // Nuevas Listas (para definir roles)
+    public final ArrayList<ItemTemplate> foodItems;        // Solo comida (para Chefs y Consumidores)
+    public final ArrayList<ItemTemplate> toolItems;        // Herramientas (para Mineros, etc.)
+    public final ArrayList<ItemTemplate> equipmentItems;   // Armas y armaduras (para Crafters)
+    public final ArrayList<ItemTemplate> artisanItems;     // Lujo y arte (para Crafters Artistas)
+
+    // Lista de Materias Primas (para Mineros)
+    public final ArrayList<ItemTemplate> rawMaterials;
 
     public ItemList() {
+        // Inicializa todas las listas
         gameItems = new ArrayList<>();
         materialItems = new ArrayList<>();
         finalItems = new ArrayList<>();
+        foodItems = new ArrayList<>();
+        toolItems = new ArrayList<>();
+        equipmentItems = new ArrayList<>();
+        artisanItems = new ArrayList<>();
+        rawMaterials = new ArrayList<>();
 
+        // --- 1. MATERIAS PRIMAS (Producidas por Mineros) ---
+        // Estas son la base de la economía. No tienen receta.
+        Material water = new Material("Water");
         Material wood = new Material("Wood");
         Material stone = new Material("Stone");
         Material ironOre = new Material("Iron Ore");
+        Material coal = new Material("Coal");
         Material herb = new Material("Herb");
+        Material fiber = new Material("Fiber"); // Antes de 'Herb', ahora materia prima
+        Material rawhide = new Material("Rawhide"); // Para hacer cuero
+        Material wheat = new Material("Wheat"); // Para hacer harina
+        Material rawMeat = new Material("Raw Meat");
+        Material rawFish = new Material("Raw Fish");
         Material diamond = new Material("Diamond");
-        Material water = new Material("Water");
 
+        // Añadir a las listas de "Materias Primas" y "Materiales"
+        rawMaterials.addAll(Arrays.asList(water, wood, stone, ironOre, coal, herb, fiber, rawhide, wheat, rawMeat, rawFish, diamond));
+        materialItems.addAll(rawMaterials);
 
-
-        Material coal = new Material("Coal", new Material[]{wood});
+        // --- 2. MATERIALES REFINADOS (Producidos por Crafters/Chefs) ---
+        // Estos se craftean, pero se usan para craftear otras cosas.
+        Material flour = new Material("Flour", new Material[]{wheat, stone});
+        Material dough = new Material("Dough", new Material[]{flour, water});
+        Material leather = new Material("Leather", new Material[]{rawhide, water});
+        Material leatherStrip = new Material("Leather Strip", new Material[]{leather});
+        Material thread = new Material("Thread", new Material[]{fiber});
+        Material cloth = new Material("Cloth", new Material[]{thread});
         Material ironIngot = new Material("Iron Ingot", new Material[]{ironOre, coal});
         Material steelIngot = new Material("Steel Ingot", new Material[]{ironIngot, coal});
-        Material fiber = new Material("Fiber", new Material[]{herb});
-        Material cloth = new Material("Cloth", new Material[]{fiber, water});
-        Material thread = new Material("Thread", new Material[]{fiber});
-        Material leather = new Material("Leather", new Material[]{herb, water});
-        Material leatherStrip = new Material("Leather Strip", new Material[]{leather});
-        Material flour = new Material("Flour", new Material[]{herb, stone});
-        Material dough = new Material("Dough", new Material[]{flour, water});
-        Material bread = new Material("Bread", new Material[]{dough, coal});
-        Material potionBase = new Material("Potion Base", new Material[]{water, herb});
-        Material potion = new Material("Potion", new Material[]{potionBase, herb});
-
         Material glass = new Material("Glass", new Material[]{stone, coal});
-
         Material bottle = new Material("Bottle", new Material[]{glass});
-        Material gemDust = new Material("Gem Dust", new Material[]{stone, herb});
-        Material rune = new Material("Rune", new Material[]{gemDust, cloth});
-        Material oil = new Material("Oil", new Material[]{herb, water});
-        Material resin = new Material("Resin", new Material[]{wood, coal});
-        Material steelReinforced = new Material("Reinforced Steel", new Material[]{steelIngot, resin});
-        Material ink = new Material("Ink", new Material[]{herb, water, coal});
-        Material paper = new Material("Paper", new Material[]{cloth, water});
-        Material scroll = new Material("Scroll", new Material[]{paper, ink});
-        Material enchantedPaper = new Material("Enchanted Paper", new Material[]{scroll, rune});
+        Material potionBase = new Material("Potion Base", new Material[]{water, herb});
+        //Material paper = new Material("Paper", new Material[]{wood, water});
+        //Material ink = new Material("Ink", new Material[]{coal, water});
+        Material gemDust = new Material("Gem Dust", new Material[]{stone, diamond});
+        Material rune = new Material("Rune", new Material[]{gemDust, herb});
+        //Material oil = new Material("Oil", new Material[]{herb, water}); // Para lámparas
+        //Material pigment = new Material("Pigment", new Material[]{herb, stone}); // Para arte
+        //Material dyedCloth = new Material("Dyed Cloth", new Material[]{cloth, pigment}); // Para arte
+        //Material steelReinforced = new Material("Reinforced Steel", new Material[]{steelIngot, leather});
+        //Material scroll = new Material("Scroll", new Material[]{paper, ink});
 
-        gameItems.addAll(Arrays.asList(
-                wood, stone, ironOre, herb, water, diamond,
-                coal, ironIngot, steelIngot, fiber, cloth, thread,
-                leather, leatherStrip, flour, dough, bread, potionBase,
-                potion, glass, bottle, gemDust, rune, oil, resin, steelReinforced,
-                ink, paper, scroll, enchantedPaper
-        ));
-        materialItems.addAll(Arrays.asList(
-                wood, stone, ironOre, herb, water,
-                coal, ironIngot, steelIngot, fiber, cloth, thread,
-                leather, leatherStrip, flour, dough, bread, potionBase,
-                potion, glass, bottle, gemDust, rune, oil, resin, steelReinforced,
-                ink, paper, scroll, enchantedPaper
-        ));
+        // Añadir a la lista de "Materiales"
+        materialItems.addAll(Arrays.asList(flour, dough, leather, leatherStrip, thread, cloth, ironIngot, steelIngot,
+                glass, bottle, potionBase, gemDust, rune ));//, , paper, ink, oil, pigment, dyedCloth, steelReinforced, scroll));
 
-        gameItems.add(new ItemTemplate("Iron Pickaxe", new Material[]{ironIngot, ironIngot, wood, leatherStrip}));
-        gameItems.add(new ItemTemplate("Steel Pickaxe", new Material[]{steelIngot, steelIngot, wood, resin}));
-        gameItems.add(new ItemTemplate("Iron Sword", new Material[]{ironIngot, leatherStrip, wood}));
-        gameItems.add(new ItemTemplate("Steel Sword", new Material[]{steelReinforced, leatherStrip, wood}));
-        gameItems.add(new ItemTemplate("Rune Sword", new Material[]{steelReinforced, rune, leatherStrip}));
+        // --- 3. COMIDA (Producida por Chefs) ---
+        // Estos son "finalItems" pero también van a "foodItems"
+        ItemTemplate bread = new ItemTemplate("Bread", new Material[]{dough, coal});
+        ItemTemplate cookedMeat = new ItemTemplate("Cooked Meat", new Material[]{rawMeat, coal});
+        ItemTemplate cookedFish = new ItemTemplate("Cooked Fish", new Material[]{rawFish, coal});
+        ItemTemplate herbSoup = new ItemTemplate("Herb Soup", new Material[]{water, herb});
+        ItemTemplate potionOfHealing = new ItemTemplate("Potion of Healing", new Material[]{potionBase, herb, bottle});
+        ItemTemplate potionOfStrength = new ItemTemplate("Potion of Strength", new Material[]{potionBase, rune, bottle});
 
-        gameItems.add(new ItemTemplate("Leather Armor", new Material[]{leather, leather, leatherStrip}));
-        gameItems.add(new ItemTemplate("Cloth Robe", new Material[]{cloth, thread, thread}));
-        gameItems.add(new ItemTemplate("Steel Chestplate", new Material[]{steelReinforced, leatherStrip, resin}));
-        gameItems.add(new ItemTemplate("Rune Helmet", new Material[]{steelIngot, rune, resin}));
+        // Añadir a las listas de "Comida" y "Finales"
+        foodItems.addAll(Arrays.asList(bread, cookedMeat, cookedFish, herbSoup, potionOfHealing, potionOfStrength));
+        finalItems.addAll(foodItems);
 
-        gameItems.add(new ItemTemplate("Magic Ring", new Material[]{rune, gemDust}));
-        gameItems.add(new ItemTemplate("Scroll of Knowledge", new Material[]{enchantedPaper, ink}));
-        gameItems.add(new ItemTemplate("Potion of Healing", new Material[]{potion, herb, bottle}));
-        gameItems.add(new ItemTemplate("Potion of Strength", new Material[]{potion, resin, bottle}));
-        gameItems.add(new ItemTemplate("Oil Lamp", new Material[]{oil, bottle, coal}));
-        gameItems.add(new ItemTemplate("Enchanted Torch", new Material[]{oil, rune, wood}));
+        // --- 4. PRODUCTOS FINALES (Producidos por Crafters) ---
 
-        gameItems.add(new ItemTemplate("Steel Nails", new Material[]{steelIngot}));
-        gameItems.add(new ItemTemplate("Backpack", new Material[]{cloth, leatherStrip, thread}));
-        gameItems.add(new ItemTemplate("Cooked Bread", new Material[]{bread, coal}));
-        gameItems.add(new ItemTemplate("Map", new Material[]{paper, ink}));
+        // 4a. Herramientas
+        ItemTemplate ironPickaxe = new ItemTemplate("Iron Pickaxe", new Material[]{ironIngot, wood, leatherStrip});
+        ItemTemplate steelPickaxe = new ItemTemplate("Steel Pickaxe", new Material[]{steelIngot, wood, leather});
+        ItemTemplate stonePickaxe = new ItemTemplate("Stone Pickaxe", new Material[]{stone, stone, wood});
+        ItemTemplate runePickaxe = new ItemTemplate("Rune Pickaxe", new Material[]{steelIngot, rune, wood});
+        ItemTemplate diamondPickaxe = new ItemTemplate("Diamond Pickaxe", new Material[]{diamond, diamond, steelIngot, wood});
 
+        //ItemTemplate map = new ItemTemplate("Map", new Material[]{paper, ink});
+        //ItemTemplate backpack = new ItemTemplate("Backpack", new Material[]{cloth, leatherStrip, thread});
+        //ItemTemplate oilLamp = new ItemTemplate("Oil Lamp", new Material[]{oil, bottle, thread});
 
-        Material refinedGem = new Material("Refined Gem", new Material[]{diamond, stone, ironOre, wood});
-        Material manaCore = new Material("Mana Core", new Material[]{refinedGem, herb, water});
-        Material enchantedGem = new Material("Enchanted Gem", new Material[]{refinedGem, manaCore});
-        Material magicThread = new Material("Magic Thread", new Material[]{thread, enchantedGem});
-        Material gemHandle = new Material("Gem Handle", new Material[]{wood, refinedGem});
-        Material crystalLens = new Material("Crystal Lens", new Material[]{refinedGem, glass});
-        Material lightCrystal = new Material("Light Crystal", new Material[]{refinedGem, water});
+        ItemTemplate stoneMortar = new ItemTemplate("Stone Mortar", new Material[]{stone, stone});
+        ItemTemplate rollingPin = new ItemTemplate("Rolling Pin", new Material[]{wood, wood});
+        ItemTemplate ironSkillet = new ItemTemplate("Iron Skillet", new Material[]{ironIngot, wood});
+        ItemTemplate knife = new ItemTemplate("Knife", new Material[]{ironIngot, wood, leatherStrip});
+        ItemTemplate apron = new ItemTemplate("Apron", new Material[]{cloth, leatherStrip, thread});
+        toolItems.addAll(Arrays.asList(ironPickaxe, steelPickaxe,  stoneMortar, rollingPin,
+                ironSkillet,knife, apron, stonePickaxe, diamondPickaxe, runePickaxe));
+        finalItems.addAll(toolItems);
 
+        /*
+        // 4b. Equipamiento (Armas y Armaduras)
+        ItemTemplate ironSword = new ItemTemplate("Iron Sword", new Material[]{ironIngot, leatherStrip, wood});
+        ItemTemplate steelSword = new ItemTemplate("Steel Sword", new Material[]{steelReinforced, leatherStrip, wood});
+        ItemTemplate leatherArmor = new ItemTemplate("Leather Armor", new Material[]{leather, leather, thread});
+        ItemTemplate clothRobe = new ItemTemplate("Cloth Robe", new Material[]{cloth, thread, thread});
+        ItemTemplate runeHelmet = new ItemTemplate("Rune Helmet", new Material[]{steelIngot, rune, leather});
 
-        gameItems.addAll(Arrays.asList(refinedGem, manaCore,enchantedGem,gemHandle,
-                                        lightCrystal, magicThread, crystalLens));
-        materialItems.addAll(Arrays.asList(refinedGem, manaCore,enchantedGem,gemHandle,
-                                        lightCrystal, magicThread, crystalLens));
+        equipmentItems.addAll(Arrays.asList(ironSword, steelSword, leatherArmor, clothRobe, runeHelmet));
+        finalItems.addAll(equipmentItems);
 
-        gameItems.add(new ItemTemplate("Diamond Ring", new Material[]{diamond, ironOre}));
-        gameItems.add(new ItemTemplate("Jeweled Necklace", new Material[]{refinedGem, thread, ironOre}));
-        gameItems.add(new ItemTemplate("Magic Ring", new Material[]{enchantedGem, steelIngot}));
-        gameItems.add(new ItemTemplate("Crystal Wand", new Material[]{gemHandle, manaCore, enchantedGem}));
-        gameItems.add(new ItemTemplate("Enchanted Sword", new Material[]{ironOre, refinedGem, enchantedGem}));
-        gameItems.add(new ItemTemplate("Diamond Crown", new Material[]{refinedGem, ironIngot, cloth}));
-        gameItems.add(new ItemTemplate("Light Amulet", new Material[]{lightCrystal, manaCore, thread}));
-        gameItems.add(new ItemTemplate("Gem Lamp", new Material[]{refinedGem, oil, ironOre}));
-        gameItems.add(new ItemTemplate("Energy Focus", new Material[]{manaCore, crystalLens, gemDust}));
-        gameItems.add(new ItemTemplate("Teleport Rune", new Material[]{enchantedGem, rune, paper}));
-        gameItems.add(new ItemTemplate("Diamond Pickaxe", new Material[]{diamond, diamond, diamond, wood, wood}));
-        gameItems.add(new ItemTemplate("Mana Mirror", new Material[]{crystalLens, enchantedGem, steelIngot}));
+        // 4c. Artesanías y Lujo
+        ItemTemplate magicRing = new ItemTemplate("Magic Ring", new Material[]{ironIngot, rune});
+        ItemTemplate jeweledNecklace = new ItemTemplate("Jeweled Necklace", new Material[]{ironIngot, thread, gemDust});
+        ItemTemplate diamondRing = new ItemTemplate("Diamond Ring", new Material[]{ironIngot, diamond});
+        ItemTemplate diamondCrown = new ItemTemplate("Diamond Crown", new Material[]{steelIngot, diamond, gemDust});
 
-        for(ItemTemplate item : gameItems){
-            if(!materialItems.contains(item)){
-                finalItems.add(item);
-            }
-        }
+        ItemTemplate scrollOfKnowledge = new ItemTemplate("Scroll of Knowledge", new Material[]{scroll, rune, pigment});
+        ItemTemplate painting = new ItemTemplate("Painting", new Material[]{wood, dyedCloth});
+        ItemTemplate enchantedTorch = new ItemTemplate("Enchanted Torch", new Material[]{oil, rune, wood});
+
+        artisanItems.addAll(Arrays.asList(magicRing, jeweledNecklace, diamondRing, diamondCrown, scroll, scrollOfKnowledge, painting, enchantedTorch));
+        finalItems.addAll(artisanItems);
+        */
+        gameItems.addAll(materialItems);
+        gameItems.addAll(finalItems);
     }
+
 
     public ArrayList<ItemTemplate> getGameItems() {
-        return new ArrayList<>(gameItems);
+        return gameItems;
     }
+
+
+    public ArrayList<ItemTemplate> getMaterialItems() {
+        return materialItems;
+    }
+
+    public ArrayList<ItemTemplate> getFoodItems() {
+        return foodItems;
+    }
+
+
     public ArrayList<ItemTemplate> getFinalItems() {
         return finalItems;
     }
 
-    public boolean isMaterial(Items item){
+
+    public boolean isMaterial(Items item) {
         for (ItemTemplate template : materialItems) {
-            if (template.getName().equals(item.getName())){
+            if (template.getName().equals(item.getName())) {
                 return true;
             }
         }
         return false;
     }
-    public ItemTemplate getItem(int index){
-        return gameItems.get(index);
+
+    public boolean isFood(Items item) {
+        for (ItemTemplate template : foodItems) {
+            if (template.getName().equals(item.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
-    public ItemTemplate getItem(String name){
-        for(ItemTemplate item : gameItems){
-            if(item.getName().equals(name)){
+
+
+    public ItemTemplate getItem(String name) {
+        for (ItemTemplate item : gameItems) {
+            if (item.getName().equals(name)) {
                 return item;
             }
         }
         return null;
     }
+
+    public ArrayList<ItemTemplate> getToolItems() {
+        return toolItems;
+    }
+
 }
